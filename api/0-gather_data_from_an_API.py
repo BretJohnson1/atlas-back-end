@@ -1,31 +1,50 @@
 #!/usr/bin/python3
-"""This module defines a script that connects to an API"""
+''' This script will gather data from an employee ID and returns
+    information about his/her list progress '''
 import requests
 import sys
 
 
-def employee_todo_list(employee_id):
-    """This function displays todo list progress"""
+def get_employee_name(employee_id):
+    ''' This function will return the name of the employee '''
+    url = "{}/{}".format(base_url, employee_id)
+    response = requests.get(url)
+    return response.json().get("name")
 
-    site_url = "https://jsonplaceholder.typicode.com/"
-    employee_url = f"{site_url}/users/{employee_id}"
-    todo_url = f"{site_url}/todos"
 
-    employee_data = requests.get(employee_url).json()
-    employee_name = employee_data['name']
-    todo_list = requests.get(todo_url, params={"userId": employee_id}).json()
+def get_assigned_tasks(employee_id):
+    ''' This function will return the number of all tasks
+        assigned to that the employee '''
+    url = "{}/{}/todos".format(base_url, employee_id)
+    response = requests.get(url)
+    return len(response.json())
 
-    completed_todos = [t["title"] for t in todo_list if t["completed"]]
-    total_todos = len(todo_list)
-    total_done = len(completed_todos)
 
-    print("Employee {} is done with tasks({}/{}):"
-          .format(employee_name, total_done, total_todos))
+def get_completed_tasks(employee_id):
+    ''' This function will return the number of tasks
+        that the employee has completed '''
+    finished_tasks = []
+    url = "{}/{}/todos".format(base_url, employee_id)
+    response = requests.get(url)
+    for task in response.json():
+        if task.get("completed"):
+            finished_tasks.append(task.get("title"))
+    return finished_tasks
 
-    for todo in completed_todos:
-        print(f"\t {todo}")
+
+def print_employee_status(employee_name, completed_tasks, assigned_tasks):
+    ''' This function will return the information about the employee'''
+    print("Employee {} is done with tasks({}/{}):".format(employee_name,
+                                                          len(completed_tasks),
+                                                          assigned_tasks))
+    for task in completed_tasks:
+        print("\t {}".format(task))
 
 
 if __name__ == "__main__":
-
-    employee_todo_list(int(sys.argv[1]))
+    employee_id = sys.argv[1]
+    base_url = "https://jsonplaceholder.typicode.com/users"
+    employee_name = get_employee_name(employee_id)
+    assigned_tasks = get_assigned_tasks(employee_id)
+    completed_tasks = get_completed_tasks(employee_id)
+    print_employee_status(employee_name, completed_tasks, assigned_tasks)
