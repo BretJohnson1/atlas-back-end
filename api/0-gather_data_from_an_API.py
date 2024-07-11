@@ -13,7 +13,7 @@ def employee_todo_list(employee_id):
 
     employee_data = requests.get(employee_url).json()
     employee_name = employee_data['name']
-    todo_list = requests.get(todo_url, params={"userId": employee_id}).json()
+    todo_list = requests.get(todo_url, params={"userId": employee_name}).json()
 
     completed_todos = [t["title"] for t in todo_list if t["completed"]]
     total_todos = len(todo_list)
