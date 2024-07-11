@@ -20,7 +20,8 @@ def employee_todo_list(employee_id):
 
     # Fetch todos information
     todos_response = requests.get(
-        f"{url}/todos", params={'userId': employee_id})
+        f"{url}/todos", params={'userId': employee_id}
+    )
     todos_data = todos_response.json()
 
     # Calculate the number of completed and total tasks
@@ -30,7 +31,9 @@ def employee_todo_list(employee_id):
 
     # Display the TODO list progress.
     print(
-        f"Employee {employee_name} is done with tasks({number_of_done_tasks}/{total_tasks}):")
+        f"Employee {employee_name} is done with tasks"
+        f"({number_of_done_tasks}/{total_tasks}):"
+    )
     for task in done_tasks:
         print(f"\t {task.get('title')}")
 
