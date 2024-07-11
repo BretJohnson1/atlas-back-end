@@ -1,31 +1,40 @@
 #!/usr/bin/python3
-"""This module defines a script that connects to an API"""
-import requests
-import sys
+"""returns info todo list progress based on the userid."""
+import json
+from sys import argv
+import urllib.request
 
 
-def employee_todo_list(employee_id):
-    """This function displays todo list progress"""
+if __name__ == '__main__':
+    # Base URL for the JSONPlaceholder API
+    base_api_url = 'https://jsonplaceholder.typicode.com'
 
-    site_url = "https://jsonplaceholder.typicode.com/"
-    employee_url = f"{site_url}/users/{employee_id}"
-    todo_url = f"{site_url}/todos"
+    # Retrieve user ID from command-line arguments
+    target_user_id = argv[1]
 
-    employee_data = requests.get(employee_url).json()
-    employee_name = employee_data['name']
-    todo_list = requests.get(todo_url, params={"userId": employee_id}).json()
+    # Make a request to the API to fetch the to-do list for the specified user
+    with urllib.request.urlopen(
+        f'{base_api_url}/users/{target_user_id}/todos?_expand=user'
+    ) as response:
+        if response.getcode() == 200:
+            # Load JSON data from the response
+            todo_data = json.loads(response.read())
 
-    completed_todos = [t["title"] for t in todo_list if t["completed"]]
-    total_todos = len(todo_list)
-    total_done = len(completed_todos)
+            # Extract employee name from the first task
+            employee_name = todo_data[0]['user']['name']
 
-    print("Employee {} is done with tasks({}/{}):"
-          .format(employee_name, total_done, total_todos))
+            # Filter completed tasks
+            completed_tasks = [task for task in todo_data if task['completed']]
+            num_completed_tasks = len(completed_tasks)
+            total_tasks = len(todo_data)
 
-    for todo in completed_todos:
-        print(f"\t {todo}")
+            # Display the summary
+            first_line = (
+                f"Employee {employee_name} is done with tasks"
+                f"({num_completed_tasks}/{total_tasks}):")
+            print(first_line)
 
-
-if __name__ == "__main__":
-
-    employee_todo_list(int(sys.argv[1]))
+            for task in completed_tasks:
+                print(f"\t {task['title']}")
+        else:
+            print(f"Error: {response.getcode()}")
